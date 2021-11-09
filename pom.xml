@@ -31,6 +31,8 @@
     <spring-boot.version>${project.parent.version}</spring-boot.version>
     <spring-retry.version>1.3.3</spring-retry.version>
     <woodstox.version>6.3.0</woodstox.version>
+    <spring-kafka.version>2.9.0</spring-kafka.version>
+    <kafka-fhir-serializer.version>1.0.2</kafka-fhir-serializer.version>
 
     <maven-antrun-plugin.version>3.1.0</maven-antrun-plugin.version>
     <maven-compiler-plugin.version>3.10.1</maven-compiler-plugin.version>
@@ -104,6 +106,11 @@
       <artifactId>hapi-fhir-validation-resources-r4</artifactId>
       <version>${hapi-fhir.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.springframework.kafka</groupId>
+      <artifactId>spring-kafka</artifactId>
+      <version>${spring-kafka.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -164,6 +171,8 @@
           <compilerArgument>-Xlint:all,-path,-processing</compilerArgument>
           <showDeprecation>true</showDeprecation>
           <showWarnings>true</showWarnings>
+          <source>17</source>
+          <target>17</target>
         </configuration>
       </plugin>
       <plugin>
