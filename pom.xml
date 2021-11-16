@@ -111,6 +111,11 @@
       <artifactId>spring-kafka</artifactId>
       <version>${spring-kafka.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.miracum</groupId>
+      <artifactId>kafka-fhir-serializer</artifactId>
+      <version>${kafka-fhir-serializer.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
