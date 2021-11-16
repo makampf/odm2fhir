@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.ssl.SSLContextBuilder;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,36 +53,59 @@ public class HTTPHelper {
   public static HttpClientBuilder HTTP_CLIENT_BUILDER;
 
   @Autowired
-  public void setHTTPClientBuilder(Environment environment) throws Exception {
-    var sslContextBuilder = SSLContextBuilder.create()
-                                             .loadTrustMaterial(null, (certificate, authType) -> true);
+  public void setHttpClient(Environment environment) throws Exception {
+    var connectionManager = new PoolingHttpClientConnectionManager();
+    connectionManager.setMaxTotal(100);
+    connectionManager.setDefaultMaxPerRoute(100);
+
+    var sslContextBuilder =
+        SSLContextBuilder.create().loadTrustMaterial(null, (certificate, authType) -> true);
 
     List.of("odm.redcap.api", "odm.dis.rest", "fhir.server", "fhir.terminologyserver")
-        .forEach(asConsumer(entry -> {
-          var keyFile = environment.getProperty(entry + ".key.file.path", File.class);
-          var keyPassword = environment.getProperty(entry + ".key.password", "").toCharArray();
-          if (keyFile != null) {
-            sslContextBuilder.loadKeyMaterial(keyFile, keyPassword, keyPassword);
-          }
-        }));
+        .forEach(
+            asConsumer(
+                entry -> {
+                  var keyFile = environment.getProperty(entry + ".key.file.path", File.class);
+                  var keyPassword =
+                      environment.getProperty(entry + ".key.password", "").toCharArray();
+                  if (keyFile != null) {
+                    sslContextBuilder.loadKeyMaterial(keyFile, keyPassword, keyPassword);
+                  }
+                }));
 
-    HTTP_CLIENT_BUILDER = HttpClientBuilder.create()
-                                           .useSystemProperties()
-                                           .setSSLContext(sslContextBuilder.build())
-                                           .setSSLHostnameVerifier(new NoopHostnameVerifier());
+    HTTP_CLIENT =
+        HttpClientBuilder.create()
+            .setConnectionManager(connectionManager)
+            .setSSLContext(sslContextBuilder.build())
+            .setSSLHostnameVerifier(new NoopHostnameVerifier())
+            .build();
   }
 
-  public static IClientInterceptor createAuthInterceptor(String basicauthUsername, String basicauthPassword,
-                                                         String oauth2TokenURL, String oauth2ClientId, String oauth2ClientSecret)
-                                                        throws IOException {
-    IClientInterceptor clientInterceptor = new BasicAuthInterceptor(basicauthUsername, basicauthPassword);
+  public static IClientInterceptor createAuthInterceptor(
+      String basicauthUsername,
+      String basicauthPassword,
+      String oauth2TokenURL,
+      String oauth2ClientId,
+      String oauth2ClientSecret)
+      throws IOException {
+    IClientInterceptor clientInterceptor =
+        new BasicAuthInterceptor(basicauthUsername, basicauthPassword);
 
     if (isNoneBlank(oauth2TokenURL, oauth2ClientId, oauth2ClientSecret)) {
+<<<<<<< HEAD
       var httpPost = RequestBuilder.post(oauth2TokenURL)
                                    .addParameter("grant_type", "client_credentials")
                                    .addParameter("client_id", oauth2ClientId)
                                    .addParameter("client_secret", oauth2ClientSecret)
                                    .build();
+=======
+      var httpPost =
+          RequestBuilder.post(oauth2TokenURL)
+              .addParameter("grant_type", "client_credentials")
+              .addParameter("client_id", oauth2ClientId)
+              .addParameter("client_secret", oauth2ClientSecret)
+              .build();
+>>>>>>> 55efee8 (fix: adds missing http connection manager)
 
       var content = HTTP_CLIENT_BUILDER.build().execute(httpPost).getEntity().getContent();
 
@@ -92,5 +116,4 @@ public class HTTPHelper {
 
     return clientInterceptor;
   }
-
 }
