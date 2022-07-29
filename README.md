@@ -122,7 +122,6 @@ To enable ouput to a FHIR API add the following argument:
 ```
 
 #### HTTP(S) Proxy
-
 (see [here](#https-proxy))
 
 #### BasicAuth
